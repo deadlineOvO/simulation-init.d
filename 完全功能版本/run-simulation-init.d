@@ -65,14 +65,11 @@ s_run_parts_mode="bash"
 s_run_parts(){
 
 
-    sd="$1"
-
-
     bash_s_run_parts(){
-        for i in $(ls ${sd} ); do
-            if [[ -x "${sd}"/"${i}" ]]; then
-                sp1="$(echo "${i}")"
-                sp2="$(eval "${sd}"/"${i}" 2>&1)"
+        for i in $(ls "$1" ); do
+            if [[ -x "$1"/"${i}" ]]; then
+                sp1="$(echo "$1"/"${i}")"
+                sp2="$("$1"/"${i}" 2>&1)"
                 echo ""${sp1}" -> "${sp2}"\n"
             fi
         done
