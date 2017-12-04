@@ -7,7 +7,7 @@
 甚至要让脚本正常工作的话好像还要安装 [busybox][meefikbusybox]
 
 注意：
-如果你的设备支持 Magisk 的话，你应该不需要这个脚本，也不要使用这个脚本  
+如果你的设备安装了 [Magisk][topjohnwuMagisk] ，你应该不需要这个脚本，也不要使用这个脚本，因为 [Magisk][topjohnwuMagisk] 有类似功能  
 如果希望脚本正常工作的话最好安装 [busybox][meefikbusybox] ，否则我也不知道会怎样
 
 
@@ -15,13 +15,15 @@
 	
 安装脚本的步骤：
 1. 下载脚本
-2. 把脚本复制到任意位置并添加可执行权限（根目录除外）
-3. 打开终端管理器
-4. 复制脚本的路径并粘贴
+2. 把脚本复制到任意位置并添加可执行权限（根目录除外，因为必须放在一个目录下才可以）
+3. 安装并打开 [终端][zt515Ansole]
+4. 复制脚本的路径并粘贴在 [终端][zt515Ansole]
 5. 使用参数 `-h` 执行一次之后你就知道应该怎么做了，也可以直接使用 `-i` 参数完成安装
 6. 按照提示检查脚本是否安装成功
-7. 成功后开始享受吧，如果失败了请向我提出问题
+7. 成功后开始享受吧，如果出现问题请向我反馈
 
 *******************
 [3mptros]:https://github.com/funnypro/360f4
 [meefikbusybox]:https://github.com/meefik/busybox
+[topjohnwuMagisk]:https://github.com/topjohnwu/MagiskManager
+[zt515Ansole]:https://github.com/zt515/Ansole
