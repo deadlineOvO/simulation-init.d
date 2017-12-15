@@ -1,0 +1,17 @@
+#!/system/bin/sh
+
+
+
+file=/storage/sdcard0/run-simulation-init.d-debug.log
+
+echo "执行参数为 ${*}" > "${file}"
+echo "ID为" >> "${file}"
+id >> "${file}"
+echo "PID为 $$" >> "${file}"
+echo "PPID为 $PPID" >> "${file}"
+echo "指向的进程" >> "${file}"
+ps | grep $$ | grep $PPID >> "${file}"
+echo "相关所有变量为" >> "${file}"
+set >> "${file}"
+
+sh -x /system/etc/run-simulation-init.d >> "${file}" 2>&1
