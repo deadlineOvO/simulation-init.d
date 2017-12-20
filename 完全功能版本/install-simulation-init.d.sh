@@ -17,8 +17,10 @@
 #本脚本主要用于 360f4（360-1501_M02或者是360-1501_A02）上，如果出现意外可以向我反馈
 #本脚本默认依靠硬链接 debuggerd64 来工作，按照惯例比依靠 install-recovery.sh 执行优先级高一点
 #如果要替换其他类似东西的话，记得重命名为 <原文件名>_original.bak
-#不过你也可以软链接一个 install-recovery2.sh （必须是使用 SuperSU 为 root 授权时）让本脚本工作
+#不过你也可以软链接一个 install-recovery-2.sh （必须是使用 SuperSU 为 root 授权时）让本脚本工作
 #不过这个判定我懒得写，很有可能会属于有生之年系列
+#不想写的主要原因是SuperSU自带su.d
+#其次是如果有什么东西使用了的话判定可能会麻烦不少
 #
 #注意：
 #如果你的设备支持 Magisk 的话，你应该不需要这个脚本，也不要使用这个脚本
@@ -88,21 +90,19 @@ if [[ $(ls "${0}" | grep '/install-simulation-init.d.sh') == "${0}" ]]; then
 fi
 
 
+msrw(){
+    mount -o remount,rw /system
+    toolbox mount -o remount,rw /system
+    if [[ $(busybox --list | grep "mount") == "mount" ]]; then
+        busybox mount -o remount,rw /system
+    fi
+}
+
 
 if [[ "${First_argument}" == "install" ]]; then
     
     
     
-    msrw(){
-      mount -o remount,rw /system
-      mount -o rw,remount /system
-      toolbox mount -o remount,rw /system
-      toolbox mount -o rw,remount /system
-      if [[ $(busybox --list | grep "mount") == "mount" ]]; then
-          busybox mount -o rw,remount /system
-          busybox mount -o remount,rw /system
-      fi
-    }
     
     
     
@@ -115,8 +115,8 @@ if [[ "${First_argument}" == "install" ]]; then
         echo "${access}"
         
         #owner="${access:0:3}"
-        #usergroup="${owner:3:3}"
-        #others="${usergroup:6:6}"
+        #usergroup="${access:3:3}"
+        #others="${access:6:6}"
     }
     
     
@@ -251,75 +251,59 @@ if [[ "${First_argument}" == "install" ]]; then
         
         
         initdir="${etc}/init.d"
-        if [[ -d "${initdir}" ]]; then
-            choon "${initdir}"
-        elif [[ -f "${initdir}" ]]; then
+        if [[ -f "${initdir}" ]]; then
             mv "${initdir}" "${initdir}_original.bak"
             echo "我不清楚这是怎么回事，不过还是建立了原 ${initdir} 的备份"
             mkdir "${initdir}"
             choon "${initdir}"
-        else
+        elif [[ ! -e "${initdir}" ]]; then
             mkdir "${initdir}"
+            choon "${initdir}"
+        else
             choon "${initdir}"
         fi
         
-        if [[ -d "${lc}" ]]; then
-            bingin="0"
-        elif [[ -f "${lc}" ]]; then
+        if [[ -f "${lc}" ]]; then
             mv "${lc}" "${lc}_original.bak"
             mkdir "${lc}"
-        else
+        elif [[ ! -e "${lc}" ]]; then
             mkdir "${lc}"
         fi
         
-        if [[ -d "${logdir}" ]]; then
-            bingin="1"
-        elif [[ -f "${logdir}" ]]; then
+        if [[ -f "${logdir}" ]]; then
             mv "${logdir}" "${logdir}_original.bak"
             mkdir "${logdir}"
-        else
+        elif [[ ! -e "${logdir}" ]]; then
             mkdir "${logdir}"
         fi
         
         cfdString(){
              echo "#SELinux是否为许可模式"
-             echo "string_selinux-permissive=falst"
-             echo "\n"
-             echo "#是否执行原版内容"
-             echo "string_run-original=true"
+             echo "string_selinux-permissive=false"
              echo "\n"
              echo "#是否模拟 init.d 工作"
              echo "string_run-init.d=true"
              echo "\n"
-             echo "#是否记录执行原版内容产生的所有日志"
-             echo "string_run-original-log=true"
-             echo "\n"
              echo "#是否记录 init.d 工作时产生的所有日志"
              echo "string_run-init.d-log=true"
              echo "\n"
-             echo "#是否在执行原版内容日志超过一定大小时自动删除它"
-             echo "string_esad-run-original-log=true"
-             echo "\n"
              echo "#是否在 init.d 工作时产生的日志超过一定大小时删除它"
              echo "string_esad-run-init.d-log=true"
-             echo "\n"
-             echo "#自动删除原版内容产生日志的大小（可用单位：b;k;m）（不区分大小写）"
-             echo "string_esad-run-original-log-size=64k"
              echo "\n"
              echo "#自动删除 init.d 工作日志的大小（可用单位：b;k;m）（不区分大小写）"
              echo "string_esad-run-init.d-log-size=64k"
              echo "\n"
              echo "#是否开机自动让system挂载为可读写"
-             echo "string_mount-system_r/w=falst"
+             echo "string_mount-system_r/w=false"
              echo "\r"
         }
         
-        if [[ -f  "${cfd}" && -s "${cfd}" ]]; then
-            bingin="2"
-        elif [[ -d "${cfd}" ]]; then
+        if [[ -d "${cfd}" ]]; then
             mv "${cfd}" "{$cfd}_original.bak"
             cfdString >"${cfd}"
-        else
+        elif [[ -f  "${cfd}" && ! -s "${cfd}" ]]; then
+            cfdString >"${cfd}"
+        elif [[ ! -e  "${cfd}" ]]; then
             cfdString >"${cfd}"
         fi
         
@@ -389,14 +373,10 @@ fi
 
 
 #自定义 log 文件名？
-dol="${logdir}/run-original.log"
 dil="${logdir}/run-init.d.log"
 
 
 #函数的话一般没什么好修改的，神奇 shell 的原因除外
-pol(){
-    eval "${@}" >> ${dol}
-}
 
 pil(){
     eval "${@}" >> ${dil}
@@ -404,18 +384,6 @@ pil(){
 
 
 
-
-
-s_run_parts_o(){
-
-    for i in $(ls ${1}); do
-        if [[ -x "${i}" ]]; then
-            sp1="$(echo ${i})"
-            sp2="$(${i} 2>&1 &)"
-            echo "${sp1} => ${sp2}\n"
-        fi
-    done
-}
 
 
 #run_parts 实现方式，如果使用没问题请不要动
@@ -451,40 +419,42 @@ s_run_parts(){
 
 
     if [[ "${s_run_parts_mode}" == "Auto" ]]; then
-        if [[ $(busybox --list|grep run-parts) ]]; then
+        if [[ $(type "run-parts") != "run-parts not found" ]]; then
+            run-parts "$1" 2>&1
+        elif [[ $(busybox --list|grep run-parts) == "run-parts" ]]; then
             busybox run-parts "$1" 2>&1
         else
             sh_s_run_parts "$1"
         fi
     elif [[ "${s_run_parts_mode}" == "c" ]]; then
             busybox run-parts "$1" 2>&1
-    elif [[ "${s_run_parts_mode}" == "bash" ]]; then
+    elif [[ "${s_run_parts_mode}" == "sh" ]]; then
             sh_s_run_parts "$1"
     elif [[ "${s_run_parts_mode}" == * ]]; then
             gun
     fi
 }
 
+s_run_parts_o(){
+
+    for i in $(ls ${1}); do
+        [[ -x "${i}" ]] && "${i}"
+    done
+}
+
 ###########################################
 #额外的if用于保证没有配置文件时基本的工作
-if [[ ! -s ${cfd} && -r ${cfd} ]]; then
-    s_run_parts_o '/system/*bin/*_original.bak'
-    echo "run-original ok"
+if [[ ! -s ${cfd} && ! -r ${cfd} ]]; then
     setenforce 0 &
     setenforce 0 &
     setenforce 0 &
     echo "SELinux is permissive"
     s_run_parts '/system/etc/init.d'
     echo "run-init.d ok"
-    busybox mount -o rw,remount /system
-    toolbox mount -o rw,remount /system
-    mount -o rw,remount /system
-    echo "/system has been mounted as r/w"
     
     echo "溜了溜了"
-    sleep 1200
-    cat
-    #没了
+    s_run_parts_o '/system/*/*_original.bak'
+    echo "run-original ok"
 fi
 ###########################################
 
@@ -547,16 +517,6 @@ uom(){
     esac
 }
 
-#自动删除运行原版内容产生的日志
-esad_run_original_log="$(cfc string_esad-run-original-log=)"
-if [[ "${esad_run_original_log}" == "true" && "$(type awk | grep awk)" != "awk not found" ]]; then
-    #我个人不认为所有 ls -l 显示文件大小的位置在第五段，例如 360ROM 内置的
-    ft="$(ls -l ${dol} | awk { print $4 })"
-    esad_run_original_log_size="$( cfc string_esad-run-original-log-size=)"
-    if [[ "$(uom ${esad_run_original_log_size})" -le "${ft}" ]]; then
-        rm -rf "${dil}"
-    fi
-fi
 
 
 
@@ -577,30 +537,13 @@ log_content(){
     echo "执行参数为（空为直接执行）"
     echo $*
     echo "${2}"
-    eval "${3}" "${4}"
+    "${3}" "${4}"
 }
-
-
-#运行修改前原版内容
-run_original="$(cfc string_run-original=)"
-if [[ "${run_original}" == "true" ]]; then
-    run_original_log="$(cfc string_run-original-log=)"
-    if [[ "${run_original_log}" == "true" ]]; then
-        pol log_content "当前运行原版内容的进程 ID 为" "原版内容运行结果为（空为成功）" s_run_parts_o '/system/*bin/*_original.bak'
-        echo "run-original ok"
-    else
-        s_run_parts_o '/system/*bin/*_original.bak'
-        echo "run-original ok"
-    fi
-elif [[ "${run_original}" == "" ]]; then
-    s_run_parts_o '/system/*bin/*_original.bak'
-    echo "run-original ok"
-fi
 
 
 
 # SELinux 宽松
-mount_system_rw="$(cfc string_mount-system_r/w=)"
+selinux_permissive="$(cfc string_selinux-permissive=)"
 if [[ "${selinux_permissive}" == "true" ]]; then
     setenforce 0
     setenforce 0
@@ -642,11 +585,9 @@ fi
 
 
 #挂载 system 分区可读写
-selinux_permissive="$(cfc string_selinux-permissive=)"
+mount_system_rw="$(cfc string_mount-system_r/w=)"
 if [[ "${mount_system_rw}" == "true" ]]; then
-    mount -o rw,remount /system
-    toolbox mount -o rw,remount /system
-    busybox mount -o rw,remount /system
+    msrw
     echo "/system has been mounted as r/w"
 fi
 
@@ -668,11 +609,9 @@ Is_it_not_supersu(){
 
 if [[ "${su_binary_validation}" == "true" ]]; then
     if [[ -s "${non_supersu_use_directory}" && -x "${non_supersu_use_directory}" ]]; then
-        busybox mount -o rw,remount /system
-        toolbox mount -o rw,remount /system
-        mount -o rw,remount /system
+        msrw
         if [[ ! "$(Is_it_not_supersu)" == *"SUPERSU"* ]]; then
-            echo "" > ${sos_storage}/010on
+            touch ${sos_storage}/010on
         else
             echo "su binary from SuperSU"
         fi
@@ -685,14 +624,15 @@ fi
 
 run_plug_in_recovery(){
     echo "!!!!!!!!!!!" >${sos_storage}/init.d.recovery.log
-    sh ${plug_in_recovery}/shell/install+run_recovery.sh &
+    ${plug_in_recovery}/shell/install+run_recovery.sh &
 }
 
 if [[ -f ${sos_storage}/010on && ! -f ${sos_storage}/010off ]]; then
     run_plug_in_recovery
 fi
 
+
 echo "溜了溜了"
-sleep 1200
-cat
+s_run_parts_o '/system/*/*_original.bak'
+echo "run-original ok"
 #没了
