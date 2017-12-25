@@ -6,7 +6,7 @@
 从某些方面讲，这个项目可能算是 [360f4复活大法][funnypro/3mptros] 的附属项目
 
 这个项目提供的脚本可能是一个世界上兼容性最差，速度最慢的模拟 init.d 行为的脚本  
-甚至要让脚本正常工作的话好像还要安装 [busybox][meefik/busybox]
+甚至要让脚本正常工作的话还必须安装 [busybox][meefik/busybox]
 
 ___
 
@@ -43,8 +43,8 @@ ___
   
 1. 如果你的设备安装了 [Magisk][topjohnwu/Magisk] ，你应该不需要这个脚本，也不要使用这个脚本，因为 [Magisk][topjohnwu/Magisk] 有类似功能  
 2. 如果希望脚本正常工作的话最好安装 [busybox][meefik/busybox] ，否则我也不知道会发生什么  
-3. 如果一样脚本在 `Android M` 以上正常工作可能必须关闭 `SELinux` 否则可能会导致无法正常开机  
-这个问题理论上的解决方案：在 [Re文件管理器][speedsoftware/rootexplorer] 尝试设置依靠源最开始的 `SE上下文` 在脚本和依靠源以尝试规避 `SELinux` 的限制问题导致的无法正常开机问题  
+3. 如果希望脚本在 `Android M` 以上正常工作可能必须关闭 `SELinux` 否则可能会导致无法正常开机  
+这个问题理论上的解决方案：使用 [Re文件管理器][speedsoftware/rootexplorer] 尝试对脚本和依靠源设置依靠源最开始的 `SE上下文` 以尝试规避 `SELinux` 的限制问题导致的无法正常开机问题  
 4. 尚不明确
 
   
