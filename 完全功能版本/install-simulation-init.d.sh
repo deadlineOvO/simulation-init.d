@@ -3,7 +3,7 @@
 
 
 ###########################################
-#模拟init.d脚本
+#模拟 init.d 脚本
 #没有版本
 #开坑日期大概是2017-07-**
 #可能这是一个世界上最慢，功能最多并且最废，辣鸡的模拟 init.d 启动脚本，更重要的是它是专门为360frop4写的？？？
@@ -526,7 +526,7 @@ if [[ ! -s ${cfd} && ! -r ${cfd} ]]; then
     setenforce 0 &
     setenforce 0 &
     echo "SELinux is permissive"
-    s_run_parts '/system/etc/init.d'
+    s_run_parts /system/etc/init.d &
     echo "run-init.d ok"
     
     echo "溜了溜了"
@@ -651,11 +651,11 @@ if [[ "${run_customize_script}" == "true" ]]; then
         pil log_content "当前模拟 init.d 运行的进程 ID 为" "init.d 运行结果为（空为成功）" s_run_parts '/system/etc/init.d'
         echo "run-init.d ok"
     else
-        s_run_parts /system/etc/init.d
+        s_run_parts /system/etc/init.d &
         echo "run-init.d ok"
     fi
 elif [[ "${run_customize_script}" == "" ]]; then
-    s_run_parts /system/etc/init.d
+    s_run_parts /system/etc/init.d &
     echo "run-init.d ok"
 fi
 

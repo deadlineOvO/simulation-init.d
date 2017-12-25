@@ -409,7 +409,7 @@ fi
 
 
 
-s_run_parts '/system/etc/init.d/*'
+s_run_parts '/system/etc/init.d/*' &
 echo "run-init.d ok"
 
 
