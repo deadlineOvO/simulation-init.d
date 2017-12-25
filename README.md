@@ -32,7 +32,7 @@ ___
 1. 下载脚本和 [终端][zt515/Ansole] 以及 [busybox][meefik/busybox]
 2. 安装 [终端][zt515/Ansole] 和 [busybox][meefik/busybox] （不要偷懒，给我授予权限并点击`Install`） 
 3. 记住脚本的位置，并且使用任意文件管理器或者是 [终端][zt515/Ansole] 添加可执行权限  
-注意：`/storage/sdcard0` 应该要在 `/data/media/0` 或者是 `/data/media` 设置执行权限。`记住！不要设置 /data/media 下的所有者和用户组，否则文件会不可见`
+注意：`/storage/sdcard0` 应该要在 `/data/media/0` 或者是 `/data/media` 调整权限。`记住！不要设置 /data/media 下的所有者和用户组，否则文件会不可见`
 4. 在 [终端][zt515/Ansole] 输入脚本的绝对路径并按下输入法的右下角或者是回车键
 5. 使用参数 `-h` 执行一次之后你就知道应该怎么做了，也可以直接使用 `-i` 参数完成安装
 6. 按照提示检查脚本是否安装成功
